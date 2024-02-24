@@ -13,6 +13,8 @@ title Balatro S/L Tool
 echo ============================
 echo 欢迎使用 Balatro 存档同步工具
 echo 工具每 5 秒检查一次存档更新
+@echo off
+echo 按 A 键回档
 echo ============================
 echo.
 
