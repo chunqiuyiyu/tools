@@ -20,7 +20,6 @@ echo A 键回档，S 键手动存档，D 键手动回档
 echo ============================
 echo.
 
-
 set Profile=1
 set FileName=C:\Users\%USERNAME%\AppData\Roaming\Balatro\%Profile%\save.jkr
 set FileTime=-
@@ -36,7 +35,7 @@ if exist "%FileName%" (
     for %%X in (%FileName%) do (
         if  "%FileTime%" NEQ "%%~tX" (
             rem copy the file to another location
-            xcopy %FileName% C:\Users\%USERNAME%\Documents\BalatroSL\save.jkr* /Y
+            xcopy %FileName% C:\Users\%USERNAME%\Documents\BalatroSL\save.jkr* /Y > nul
             echo 存档已更新于 %%~tX
             echo.
         )
@@ -51,13 +50,13 @@ choice /c ASDB /t 3 /d B >nul 2>nul
 if %errorlevel% == 1 (
      echo.
      echo 正在回档...更新于 %FileTime%
-     xcopy C:\Users\%USERNAME%\Documents\BalatroSL\save.jkr C:\Users\%USERNAME%\AppData\Roaming\Balatro\%Profile%\ /Y
+     xcopy C:\Users\%USERNAME%\Documents\BalatroSL\save.jkr C:\Users\%USERNAME%\AppData\Roaming\Balatro\%Profile%\save.jkr* /Y > nul
      echo 回档完成
      echo.
 )
 if %errorlevel% == 2 (
     echo.
-    xcopy %FileName% C:\Users\%USERNAME%\Documents\BalatroSL\save-manually.jkr* /Y > null
+    xcopy %FileName% C:\Users\%USERNAME%\Documents\BalatroSL\save-manually.jkr* /Y > nul
     rem get the file time
     echo 正在手动存档...更新于 %ManuallyFileTime%
     echo.
@@ -65,7 +64,7 @@ if %errorlevel% == 2 (
 if %errorlevel% == 3 (
     echo.
     echo 正在手动回档...更新于 %ManuallyFileTime%
-    xcopy C:\Users\%USERNAME%\Documents\BalatroSL\save-manually.jkr C:\Users\%USERNAME%\AppData\Roaming\Balatro\%Profile%\save.jkr* /Y
+    xcopy C:\Users\%USERNAME%\Documents\BalatroSL\save-manually.jkr C:\Users\%USERNAME%\AppData\Roaming\Balatro\%Profile%\save.jkr* /Y > nul
     echo 回档完成
     echo.
 )
