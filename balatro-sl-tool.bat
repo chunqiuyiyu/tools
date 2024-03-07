@@ -10,23 +10,21 @@ if not defined FOO (
 
 title Balatro S/L Tool
 
-echo ============================
-echo 欢迎使用 Balatro 存档同步工具
+echo ===============================
+echo 欢迎使用 Balatro 存档同步工具 v1.3
 echo 工具每 5 秒检查一次存档更新
 echo.
 @echo off
 echo 请在游戏返回主菜单后使用以下按键
 echo A 键回档，S 键手动存档，D 键手动回档
-echo ============================
+echo ===============================
 echo.
 
 set Profile=1
 set FileName=C:\Users\%USERNAME%\AppData\Roaming\Balatro\%Profile%\save.jkr
 set FileTime=-
+set ManuallyFileName=C:\Users\%USERNAME%\Documents\BalatroSL\save-manually.jkr
 set ManuallyFileTime=-
-for %%X in (C:\Users\%USERNAME%\Documents\BalatroSL\save-manually.jkr) do (
-set ManuallyFileTime=%%~tX
-)
 
 echo 正在检查存档更新...
 
@@ -35,12 +33,18 @@ if exist "%FileName%" (
     for %%X in (%FileName%) do (
         if  "%FileTime%" NEQ "%%~tX" (
             rem copy the file to another location
-            xcopy %FileName% C:\Users\%USERNAME%\Documents\BalatroSL\save.jkr* /Y > nul
-            echo 存档已更新于 %%~tX
+            xcopy %FileName% C:\Users\%USERNAME%\Documents\BalatroSL\save.jkr* /Y /f > nul
+            echo 自动存档已更新于 %%~tX
             echo.
         )
 
         set FileTime=%%~tX
+    )
+)
+
+if exist "%ManuallyFileName%" (
+    for %%X in (%ManuallyFileName%) do (
+        set ManuallyFileTime=%%~tX
     )
 )
 
