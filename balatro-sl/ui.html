@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="utf-8" />
+    <title></title>
+    <style>
+        body {
+            padding: 8px;
+        }
+
+        .tip {
+            font-size: 14px;
+            margin-bottom: 8px;
+        }
+
+        ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            overflow-y: auto;
+        }
+
+        li {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px;
+            border-bottom: 1px solid #ccc;
+        }
+    </style>
+</head>
+
+<body>
+<div class="tip"></div>
+<fieldset>
+    <legend>请选择保存方式：</legend>
+    <div>
+        <input
+                type="radio"
+                id="manually"
+                name="method"
+                value="manually"
+                checked
+        />
+        <label for="manually">手动 <button class="save">保存</button></label>
+    </div>
+
+    <div>
+        <input type="radio" id="auto" name="method" value="auto" />
+        <label for="auto">自动</label>
+        <label>
+            <input type="number" value="5" min="5" style="width: 80px" />
+            秒保存一次
+        </label>
+    </div>
+</fieldset>
+
+<ul style="max-height: 326px"></ul>
+
+<script>
+    window.onload = async () => {
+        const ul = document.querySelector("ul");
+        const radios = document.querySelectorAll('input[type="radio"]');
+        const input = document.querySelector('input[type="number"]');
+        const btn = document.querySelector(".save");
+        const tip = document.querySelector(".tip");
+
+        const appPath = await aardio.getAppDataPath();
+        const docPath = await aardio.getDocPath();
+        console.log(appPath, docPath);
+
+        const BASE_PATH = `${appPath}\\Balatro\\1\\`;
+        const SAVE_PATH = `${docPath}\\`;
+        const file = `save.jkr`;
+        const SOURCE_PATH = `${BASE_PATH}${file}`;
+
+        const keepListLimit = async (limit = 10) => {
+            const ul = document.querySelector("ul");
+            const list = Array.from(ul.children);
+
+            if (list.length >= limit) {
+                const last = list[list.length - 1];
+                const dataPath = last.getAttribute("data-path");
+                const v = await aardio.delFile(dataPath);
+                if (v) {
+                    ul.removeChild(last);
+                }
+            }
+        };
+
+        const addRestoreEvent = () => {
+            const restores = document.querySelectorAll(".restore");
+            restores.forEach((restore) => {
+                restore.onclick = async (e) => {
+                    const li = e.target.parentElement;
+                    const dataPath = li.getAttribute("data-path");
+                    const v = await aardio.copyFile(dataPath, SOURCE_PATH);
+                    if (v) {
+                        tip.textContent = "✔️ 回档成功";
+                    }
+                };
+            });
+        };
+
+        const saveFile = async (savePath, method) => {
+            await keepListLimit();
+
+            const date = new Date();
+            const filePath = `${savePath}.${date.getTime()}`;
+
+            aardio.copyFile(SOURCE_PATH, filePath).then((v) => {
+                if (v) {
+                    const li = document.createElement("li");
+                    const prefix = method === "auto" ? "⚙️" : "🖱️";
+                    li.setAttribute("data-path", filePath);
+                    li.innerHTML = `${prefix} - ${date.toLocaleString()} <button class="restore">回档</button>`;
+                    ul.insertBefore(li, ul.firstChild);
+                    addRestoreEvent();
+                }
+            });
+        };
+
+        const genList = async () => {
+            const files = await aardio.getFile(`${SAVE_PATH}BalatroSL`);
+            files.forEach((file) => {
+                const li = document.createElement("li");
+                // file:new.txt.1631234567890
+                const time = file.split(".")[2];
+                const date = new Date(Number(time));
+
+                li.setAttribute("data-path", file);
+                li.innerHTML = `📁 - ${date.toLocaleString()} <button class="restore">回档</button>`;
+                ul.appendChild(li);
+                addRestoreEvent();
+            });
+        };
+
+        aardio.checkFile(SOURCE_PATH).then(async (v) => {
+            if (v) {
+                tip.textContent = "✔️ Balatro 游戏已经运行，在游戏主界面回档";
+
+                await genList();
+            } else {
+                tip.textContent = "❌ Balatro 游戏未运行";
+            }
+        });
+
+        let timer = null;
+        radios.forEach((radio) => {
+            radio.addEventListener("change", (e) => {
+                clearInterval(timer);
+                const isAuto = e.target.value === "auto";
+                input.disabled = !isAuto;
+
+                if (isAuto) {
+                    const method = document.querySelector(
+                        'input[type="radio"]:checked'
+                    ).value;
+                    const interval = input.value;
+                    const savePath = `${SAVE_PATH}BalatroSL\\auto\\${file}`;
+
+                    console.log(savePath);
+                    timer = setInterval(() => {
+                        saveFile(savePath, method);
+                    }, interval * 1000);
+                }
+            });
+        });
+
+        btn.addEventListener("click", () => {
+            const savePath = `${SAVE_PATH}BalatroSL\\manually\\${file}`;
+            saveFile(savePath, "manually");
+        });
+    };
+</script>
+</body>
+</html>

@@ -1,0 +1,44 @@
+import win.ui;
+/*DSG{{*/
+mainForm = win.form(text="Balatro S/L tool";right=319;bottom=479;border="thin";max=false)
+mainForm.add()
+/*}}*/
+
+import web.view;
+var theView  = web.view(mainForm);
+
+import fsys;
+
+var arr={}
+theView.external = {
+	getAppDataPath = function(){
+		return fsys.getSpecial(0x1a/*_CSIDL_APPDATA*/)
+	}
+	getDocPath = function(){
+		return fsys.getSpecial(5/*_CSIDL_PERSONAL*/)
+	}
+	checkFile = function(savePath){
+		return io.exist(savePath)
+	}
+	copyFile = function(srcPath, targetPath){
+		return fsys.copy(srcPath, targetPath)
+	}
+	delFile = function(delPath){
+		return fsys.delete(delPath);
+	}
+	getFile = function(getPath){
+		fsys.enum( getPath, "*.*",
+			function(dir,filename,fullpath,findData){
+				if(filename){
+		           	table.insert(arr,fullpath)
+				}
+			}
+		);
+		return  arr;
+	}
+}
+
+theView.go("ui.html");
+
+mainForm.show();
+win.loopMessage();
